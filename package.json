@@ -1,0 +1,23 @@
+{
+  "name": "gerenciador-perfumes",
+  "version": "1.0.0",
+  "description": "Mini sistema completo para gerenciamento de perfumes (Full Stack: Node.js, Express, MongoDB, Mongoose, Vanilla JS)",
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "dev": "npm --prefix backend run dev",
+    "test": "npm --prefix backend test",
+    "install:backend": "npm --prefix backend install"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "mongoose",
+    "vanilla-js",
+    "rest-api",
+    "perfumes",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L'Essence | Gerenciamento de Perfumes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Bar / Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-logo">
+        <span class="logo-icon">✨</span>
+        <div class="logo-text">
+          <h1>L'Essence</h1>
+          <span class="subtitle">Gerenciador de Perfumes Exclusivos</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btn-seed" class="btn btn-outline" title="Carregar perfumes de demonstração">
+          <span>🔄</span> Carregar Amostras
+        </button>
+        <button id="btn-open-create-modal" class="btn btn-primary">
+          <span>+</span> Novo Perfume
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-main">
+    <div class="container">
+
+      <!-- Metrics / Stats Bar -->
+      <section class="stats-grid" id="stats-section">
+        <div class="stat-card">
+          <div class="stat-icon">🧴</div>
+          <div class="stat-info">
+            <span class="stat-label">Total de Perfumes</span>
+            <span class="stat-value" id="stat-total">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-info">
+            <span class="stat-label">Marcas Distintas</span>
+            <span class="stat-value" id="stat-marcas">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💎</div>
+          <div class="stat-info">
+            <span class="stat-label">Preço Médio</span>
+            <span class="stat-value" id="stat-preco-medio">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-info">
+            <span class="stat-label">Status da Conexão</span>
+            <span class="stat-value badge-status" id="stat-db-status">Verificando...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Search & Filters Toolbar -->
+      <section class="toolbar-section">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="input-search" 
+            placeholder="Buscar por marca, modelo ou fragrância..." 
+            autocomplete="off"
+          >
+          <button id="btn-clear-search" class="btn-clear" title="Limpar busca" style="display: none;">✕</button>
+        </div>
+
+        <div class="filters-group">
+          <div class="select-wrapper">
+            <label for="select-brand">Marca:</label>
+            <select id="select-brand">
+              <option value="todas">Todas as Marcas</option>
+            </select>
+          </div>
+
+          <div class="select-wrapper">
+            <label for="select-category">Categoria:</label>
+            <select id="select-category">
+              <option value="todas">Todas</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Unissex">Unissex</option>
+            </select>
+          </div>
+
+          <div class="select-wrapper">
+            <label for="select-sort">Ordenar por:</label>
+            <select id="select-sort">
+              <option value="data_desc">Mais Recentes</option>
+              <option value="preco_asc">Menor Preço</option>
+              <option value="preco_desc">Maior Preço</option>
+              <option value="nome_asc">Nome (A - Z)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Perfumes Grid Display -->
+      <section class="perfumes-catalog">
+        <div class="catalog-header">
+          <h2 class="section-title">Catálogo de Fragrâncias</h2>
+          <span class="results-count" id="results-count">Exibindo 0 perfumes</span>
+        </div>
+
+        <!-- Skeleton / Loading State -->
+        <div id="loading-state" class="loading-state" style="display: none;">
+          <div class="spinner"></div>
+          <p>Carregando fragrâncias...</p>
+        </div>
+
+        <!-- Grid Cards -->
+        <div class="perfume-grid" id="perfumes-container">
+          <!-- Inserido dinamicamente via Vanilla JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <div class="empty-icon">🥀</div>
+          <h3>Nenhum perfume encontrado</h3>
+          <p>Tente ajustar os filtros de busca ou cadastre um novo produto na coleção.</p>
+          <button class="btn btn-primary" id="btn-empty-action">Cadastrar Perfume</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal de Cadastro / Criação -->
+  <div class="modal-backdrop" id="modal-create" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">✨</span>
+          <h3 class="modal-title">Novo Perfume</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-create-modal" aria-label="Fechar">✕</button>
+      </div>
+
+      <form id="form-create-perfume" novalidate>
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="create-marca">Marca <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="create-marca" 
+                placeholder="Ex: Chanel, Dior, Natura" 
+                required 
+                maxlength="100"
+              >
+              <span class="field-error" id="err-create-marca"></span>
+            </div>
+
+            <div class="form-group col-6">
+              <label for="create-modelo">Modelo / Nome <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="create-modelo" 
+                placeholder="Ex: Bleu de Chanel, Sauvage" 
+                required 
+                maxlength="150"
+              >
+              <span class="field-error" id="err-create-modelo"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="create-preco">Preço (R$) <span class="required">*</span></label>
+              <input 
+                type="text" 
+                id="create-preco" 
+                placeholder="R$ 0,00" 
+                required
+              >
+              <span class="field-error" id="err-create-preco"></span>
+            </div>
+
+            <div class="form-group col-6">
+              <label for="create-categoria">Categoria</label>
+              <select id="create-categoria">
+                <option value="Unissex">Unissex</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="create-foto">URL da Foto / Imagem <span class="required">*</span></label>
+            <div class="input-with-button">
+              <input 
+                type="url" 
+                id="create-foto" 
+                placeholder="https://exemplo.com/imagem-do-perfume.jpg" 
+                required
+              >
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-quick-sample-img" title="Inserir imagem de exemplo">
+                Exemplo
+              </button>
+            </div>
+            <span class="field-error" id="err-create-foto"></span>
+
+            <!-- Image Preview Box -->
+            <div class="image-preview-container" id="create-img-preview-box">
+              <img id="create-img-preview" src="" alt="Prévia da foto" style="display: none;">
+              <span class="preview-placeholder" id="create-img-placeholder">Pré-visualização da imagem aparecerá aqui</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="create-descricao">Notas Olfativas / Descrição (Opcional)</label>
+            <textarea 
+              id="create-descricao" 
+              rows="3" 
+              placeholder="Ex: Fragrância amadeirada com toque cítrico e notas de baunilha..."
+              maxlength="500"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-create">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create">
+            <span class="btn-text">Salvar Perfume</span>
+            <div class="btn-loader" style="display: none;"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Edição -->
+  <div class="modal-backdrop" id="modal-edit" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">✏️</span>
+          <h3 class="modal-title">Editar Perfume</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-edit-modal" aria-label="Fechar">✕</button>
+      </div>
+
+      <form id="form-edit-perfume" novalidate>
+        <input type="hidden" id="edit-id">
+
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-marca">Marca <span class="required">*</span></label>
+              <input type="text" id="edit-marca" required maxlength="100">
+              <span class="field-error" id="err-edit-marca"></span>
+            </div>
+
+            <div class="form-group col-6">
+              <label for="edit-modelo">Modelo / Nome <span class="required">*</span></label>
+              <input type="text" id="edit-modelo" required maxlength="150">
+              <span class="field-error" id="err-edit-modelo"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-preco">Preço (R$) <span class="required">*</span></label>
+              <input type="text" id="edit-preco" required>
+              <span class="field-error" id="err-edit-preco"></span>
+            </div>
+
+            <div class="form-group col-6">
+              <label for="edit-categoria">Categoria</label>
+              <select id="edit-categoria">
+                <option value="Unissex">Unissex</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-foto">URL da Foto <span class="required">*</span></label>
+            <input type="url" id="edit-foto" required>
+            <span class="field-error" id="err-edit-foto"></span>
+
+            <div class="image-preview-container" id="edit-img-preview-box">
+              <img id="edit-img-preview" src="" alt="Prévia da foto">
+              <span class="preview-placeholder" id="edit-img-placeholder" style="display: none;">Pré-visualização da imagem</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-descricao">Notas Olfativas / Descrição</label>
+            <textarea id="edit-descricao" rows="3" maxlength="500"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="btn-cancel-edit">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit">
+            <span class="btn-text">Atualizar Alterações</span>
+            <div class="btn-loader" style="display: none;"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Exclusão -->
+  <div class="modal-backdrop" id="modal-delete" style="display: none;">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon text-danger">⚠️</span>
+          <h3 class="modal-title">Confirmar Exclusão</h3>
+        </div>
+        <button class="btn-close-modal" id="btn-close-delete-modal" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Tem certeza de que deseja excluir permanentemente o perfume <strong id="delete-perfume-name"></strong>?</p>
+        <p class="text-muted small">Esta ação não poderá ser revertida.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" id="btn-cancel-delete">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btn-confirm-delete">Excluir Produto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>L'Essence Perfumes © 2026 — Sistema Full Stack (Node.js + MongoDB + Vanilla JS)</p>
+      <div class="footer-links">
+        <a href="/api/health" target="_blank" class="footer-link">API Health</a>
+        <a href="/api/perfumes" target="_blank" class="footer-link">JSON REST Endpoint</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
